@@ -9,6 +9,7 @@ PY3, PY2 = six.PY3, not six.PY3
 
 
 class TestIt(vmtest.VmTestCase):
+
     def test_constant(self):
         self.assert_ok("17")
 
@@ -72,107 +73,141 @@ class TestIt(vmtest.VmTestCase):
                 assert isinstance(x, float)
                 """)
 
-    def test_slice(self):
+    def test_slice1(self):
         self.assert_ok("""\
             print("hello, world"[3:8])
             """)
+
+    def test_slice2(self):
         self.assert_ok("""\
             print("hello, world"[:8])
             """)
+
+    def test_slice3(self):
         self.assert_ok("""\
             print("hello, world"[3:])
             """)
+
+    def test_slice4(self):
         self.assert_ok("""\
             print("hello, world"[:])
             """)
+
+    def test_slice5(self):
         self.assert_ok("""\
             print("hello, world"[::-1])
             """)
+
+    def test_slice6(self):
         self.assert_ok("""\
             print("hello, world"[3:8:2])
             """)
 
-    def test_slice_assignment(self):
+    def test_slice_assignment1(self):
         self.assert_ok("""\
             l = list(range(10))
             l[3:8] = ["x"]
             print(l)
             """)
+
+    def test_slice_assignment2(self):
         self.assert_ok("""\
             l = list(range(10))
             l[:8] = ["x"]
             print(l)
             """)
+
+    def test_slice_assignment3(self):
         self.assert_ok("""\
             l = list(range(10))
             l[3:] = ["x"]
             print(l)
             """)
+
+    def test_slice_assignment4(self):
         self.assert_ok("""\
             l = list(range(10))
             l[:] = ["x"]
             print(l)
             """)
 
-    def test_slice_deletion(self):
+    def test_slice_deletion1(self):
         self.assert_ok("""\
             l = list(range(10))
             del l[3:8]
             print(l)
             """)
+
+    def test_slice_deletion2(self):
         self.assert_ok("""\
             l = list(range(10))
             del l[:8]
             print(l)
             """)
+
+    def test_slice_deletion3(self):
         self.assert_ok("""\
             l = list(range(10))
             del l[3:]
             print(l)
             """)
+
+    def test_slice_deletion4(self):
         self.assert_ok("""\
             l = list(range(10))
             del l[:]
             print(l)
             """)
+
+    def test_slice_deletion5(self):
         self.assert_ok("""\
             l = list(range(10))
             del l[::2]
             print(l)
             """)
 
-    def test_building_stuff(self):
+    def test_building_stuff1(self):
         self.assert_ok("""\
             print((1+1, 2+2, 3+3))
             """)
+
+    def test_building_stuff2(self):
         self.assert_ok("""\
             print([1+1, 2+2, 3+3])
             """)
+
+    def test_building_stuff3(self):
         self.assert_ok("""\
             print({1:1+1, 2:2+2, 3:3+3})
             """)
 
-    def test_subscripting(self):
+    def test_subscripting1(self):
         self.assert_ok("""\
             l = list(range(10))
             print("%s %s %s" % (l[0], l[3], l[9]))
             """)
+
+    def test_subscripting2(self):
         self.assert_ok("""\
             l = list(range(10))
             l[5] = 17
             print(l)
             """)
+
+    def test_subscripting3(self):
         self.assert_ok("""\
             l = list(range(10))
             del l[5]
             print(l)
             """)
 
-    def test_generator_expression(self):
+    def test_generator_expression1(self):
         self.assert_ok("""\
             x = "-".join(str(z) for z in range(5))
             assert x == "0-1-2-3-4"
             """)
+
+    def test_generator_expression2(self):
         # From test_regr.py
         # This failed a different way than the previous join when genexps were
         # broken:
@@ -186,6 +221,7 @@ class TestIt(vmtest.VmTestCase):
                         initial_indent=blanks, subsequent_indent=blanks)
             print(res)
             """)
+
     def test_list_comprehension(self):
         self.assert_ok("""\
             x = [z*z for z in range(5)]
@@ -380,7 +416,7 @@ class TestIt(vmtest.VmTestCase):
             assert b.baz == 3
             """)
 
-    def test_attribute_access(self):
+    def test_attribute_access1(self):
         self.assert_ok("""\
             class Thing(object):
                 z = 17
@@ -392,6 +428,7 @@ class TestIt(vmtest.VmTestCase):
             print(t.x)
             """)
 
+    def test_attribute_access2(self):
         self.assert_ok("""\
             class Thing(object):
                 z = 17
@@ -459,6 +496,7 @@ class TestIt(vmtest.VmTestCase):
                 exec "a = 11" in g, g
                 assert g['a'] == 11
                 """)
+
     elif PY3:
         def test_exec_statement(self):
             self.assert_ok("""\
@@ -534,6 +572,7 @@ class TestIt(vmtest.VmTestCase):
 
 if PY2:
     class TestPrinting(vmtest.VmTestCase):
+
         def test_printing(self):
             self.assert_ok("print 'hello'")
             self.assert_ok("a = 3; print a+4")
@@ -558,6 +597,7 @@ if PY2:
 
 
 class TestLoops(vmtest.VmTestCase):
+
     def test_for(self):
         self.assert_ok("""\
             for i in range(10):
@@ -610,12 +650,22 @@ class TestLoops(vmtest.VmTestCase):
 
 
 class TestComparisons(vmtest.VmTestCase):
+
     def test_in(self):
         self.assert_ok("""\
             assert "x" in "xyz"
+            assert b"x" in b"xyz"
             assert "x" not in "abc"
             assert "x" in ("x", "y", "z")
             assert "x" not in ("a", "b", "c")
+            assert "x" in ["x", "y", "z"]
+            assert "x" not in ["a", "b", "c"]
+            assert "x" in {'x', 'y', 'z'}
+            assert "x" not in {'a', 'b', 'c'}
+            assert "x" in {'x': 1, 'y': 2, 'z': 3}
+            assert "x" not in {'a': 1, 'b': 2, 'c': 3}
+            assert 3 in range(10)
+            assert 17 not in range(10)
             """)
 
     def test_less(self):
@@ -632,4 +682,41 @@ class TestComparisons(vmtest.VmTestCase):
             assert 3 >= 1 and 3 >= 3
             assert "z" > "a"
             assert "z" >= "a" and "z" >= "z"
+            """)
+
+    def test_is(self):
+        self.assert_ok("""\
+            assert "x" is "x"
+            assert "x" is not "y"
+            assert True is not False
+            assert () is tuple()
+            assert [] is not list()
+            assert {} is not dict()
+            assert {} is not set()
+            assert None is None
+            assert '' is str()
+            assert b'' is bytes()
+            assert 0 is int()
+            """)
+
+    def test_zero(self):
+        self.assert_ok("""\
+            assert False if 0 else True
+            assert True if 1 else False
+            assert False if '' else True
+            assert True if 'a' else False
+            assert False if b'' else True
+            assert True if b'b' else False
+            assert False if 0.0 else True
+            assert True if 1.0 else False
+            assert False if (0+0j) else True
+            assert True if (1+1j) else False
+            assert False if () else True
+            assert True if (1, 2) else False
+            assert False if [] else True
+            assert True if [1, 2] else False
+            assert False if {} else True
+            assert True if {1, 2} else False
+            assert False if {} else True
+            assert True if {1: 'a', 2: 'b'} else False
             """)

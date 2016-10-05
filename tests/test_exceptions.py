@@ -9,7 +9,8 @@ PY3, PY2 = six.PY3, not six.PY3
 
 
 class TestExceptions(vmtest.VmTestCase):
-    def test_catching_exceptions(self):
+
+    def test_catching_exceptions1(self):
         # Catch the exception precisely
         self.assert_ok("""\
             try:
@@ -18,6 +19,8 @@ class TestExceptions(vmtest.VmTestCase):
             except IndexError:
                 print("caught it!")
             """)
+
+    def test_catching_exceptions2(self):
         # Catch the exception by a parent class
         self.assert_ok("""\
             try:
@@ -26,6 +29,8 @@ class TestExceptions(vmtest.VmTestCase):
             except Exception:
                 print("caught it!")
             """)
+
+    def test_catching_exceptions3(self):
         # Catch all exceptions
         self.assert_ok("""\
             try:
