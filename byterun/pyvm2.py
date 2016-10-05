@@ -421,7 +421,12 @@ class VirtualMachine(object):
         elif name in f.f_builtins:
             val = f.f_builtins[name]
         else:
-            raise NameError("global name '%s' is not defined" % name)
+            if PY2:
+                raise NameError("global name '%s' is not defined" % name)
+            elif PY3:
+                if sys.version_info >= (3, 4):
+                    raise NameError("name '%s' is not defined" % name)
+                raise NameError("global name '%s' is not defined" % name)
         self.push(val)
 
     def byte_LOAD_DEREF(self, name):
@@ -463,6 +468,10 @@ class VirtualMachine(object):
         'XOR':      operator.xor,
         'OR':       operator.or_,
     }
+    if sys.version_info[:2] >= (3, 5):
+        BINARY_OPERATORS.update({
+            'MATRIX_MULTIPLY': operator.matmul,
+        })
 
     def binaryOperator(self, op):
         x, y = self.popn(2)
@@ -494,6 +503,8 @@ class VirtualMachine(object):
             x ^= y
         elif op == 'OR':
             x |= y
+        #elif sys.version_info[:2] >= (3, 5) and op == 'MATRIX_MULTIPLY':
+        #    x @= y
         else:           # pragma: no cover
             raise VirtualMachineError("Unknown in-place operator: %r" % op)
         self.push(x)
@@ -577,7 +588,14 @@ class VirtualMachine(object):
 
     def byte_BUILD_MAP(self, size):
         # size is ignored.
-        self.push({})
+        if sys.version_info[:2] >= (3, 5):
+            the_map = {}
+            for _ in range(size):
+                key, val = self.popn(2)
+                the_map[key] = val
+            self.push(the_map)
+        else:
+            self.push({})
 
     def byte_STORE_MAP(self):
         the_map, val, key = self.popn(3)
@@ -705,6 +723,11 @@ class VirtualMachine(object):
 
     def byte_GET_ITER(self):
         self.push(iter(self.pop()))
+
+    if sys.version_info[:2] >= (3, 5):
+        def byte_GET_YIELD_FROM_ITER(self):
+            # see http://www.snarky.ca/how-the-heck-does-async-await-work-in-python-3-5
+            raise VirtualMachineError("unknown bytecode type: GET_YIELD_FROM_ITER")
 
     def byte_FOR_ITER(self, jump):
         iterobj = self.top()
@@ -889,6 +912,10 @@ class VirtualMachine(object):
             elif PY3:
                 self.push('silenced')
 
+    if sys.version_info[:2] >= (3, 5):
+        def byte_WITH_CLEANUP_START(self):
+            raise VirtualMachineError("unknown bytecode type: WITH_CLEANUP_START")
+
     ## Functions
 
     def byte_MAKE_FUNCTION(self, argc):
@@ -1025,15 +1052,41 @@ class VirtualMachine(object):
             name, bases, methods = self.popn(3)
             self.push(type(name, bases, methods))
 
-
     elif PY3:
         def byte_LOAD_BUILD_CLASS(self):
             # New in py3
-            self.push(__build_class__)
+            if sys.version_info >= (3, 4):
+                self.push(build_class)
+            else:
+                self.push(__build_class__)
 
         def byte_STORE_LOCALS(self):
             self.frame.f_locals = self.pop()
 
-    if 0:   # Not in py2.7
+    if sys.version_info[:2] != (2, 7):   # Not in py2.7
         def byte_SET_LINENO(self, lineno):
             self.frame.f_lineno = lineno
+
+if sys.version_info[:2] >= (3, 4):
+    # patch written by https://github.com/darius
+    def build_class(func, name, *bases, **kwds):
+        "Simplified (i.e., wrong) version of __build_class__."
+        assert isinstance(func, Function)
+        assert isinstance(name, str)
+        # This is simplified in that we don't yet handle metaclasses. So we do
+        # make sure there is no metaclass, before proceeding.
+        metaclass = kwds.get('metaclass') # (We don't just write 'metaclass=None'
+        # in the signature above because that's a syntax error in Py2.)
+        assert metaclass is None
+        assert not kwds
+        for base in bases:
+            assert type(base) == type
+        # OK, no metaclass; we may proceed.
+        # XXX What about func.func_closure? vm.make_frame() gives us no way to pass it in.
+        # We'll come back to fix this; for now, just make sure this case doesn't come up.
+        assert not func.func_closure
+        ns = {}
+        frame = func._vm.make_frame(func.func_code, f_globals=func.func_globals, f_locals=ns)
+
+        func_result = func._vm.run_frame(frame)
+        return type(name, bases, ns)
