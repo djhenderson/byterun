@@ -1,4 +1,7 @@
 language: python
+branch:
+ only:
+ - local
 python:
  #- "2.5"  # not available on Travis-CI
  #- "2.6"  # no discover in unittest, does not work
