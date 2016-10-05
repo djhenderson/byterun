@@ -1,21 +1,22 @@
 language: python
-branch:
- only:
- - local
+branches:
+  only:
+    - local
 python:
- #- "2.5"  # not available on Travis-CI
- #- "2.6"  # no discover in unittest, does not work
- - "2.7"
- #- "3.0"  # not available on Travis-CI
- #- "3.1"  # not installed on Travis-CI
- - "3.2"
- - "3.3"
- - "3.4"
- #- "3.5"  # - failing
- #- "3.5-dev" # 3.5 development branch
- #- "nightly" # 3.6-dev - failing
+  #- "2.5"  # not available on Travis-CI
+  #- "2.6"  # no discover in unittest, does not work
+  - "2.7"
+  #- "3.0"  # not available on Travis-CI
+  #- "3.1"  # not installed on Travis-CI
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  #- "3.5"  # - failing
+  #- "3.5-dev" # 3.5 development branch
+  #- "nightly" # 3.6-dev - failing
 # command to install dependencies
-install: "pip install -r requirements.txt"
+install:
+  - "pip install -r requirements.txt"
 # command to run tests
-#script: "python -m unittest discover"
-script: "sh ./run_unittest.sh"
+script:
+  - "sh ./run_unittest.sh"
