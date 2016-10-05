@@ -8,6 +8,7 @@ PY3 = six.PY3
 
 
 class TestFunctions(vmtest.VmTestCase):
+
     def test_functions(self):
         self.assert_ok("""\
             def fn(a, b=17, c="Hello", d=[]):
@@ -54,23 +55,29 @@ class TestFunctions(vmtest.VmTestCase):
             fn(6, *[77], **{'c': 23, 'd': [123]})
             """)
 
-    def test_defining_functions_with_args_kwargs(self):
+    def test_defining_functions_with_args_kwargs1(self):
         self.assert_ok("""\
             def fn(*args):
                 print("args is %r" % (args,))
             fn(1, 2)
             """)
+
+    def test_defining_functions_with_args_kwargs2(self):
         self.assert_ok("""\
             def fn(**kwargs):
                 print("kwargs is %r" % (kwargs,))
             fn(red=True, blue=False)
             """)
+
+    def test_defining_functions_with_args_kwargs3(self):
         self.assert_ok("""\
             def fn(*args, **kwargs):
                 print("args is %r" % (args,))
                 print("kwargs is %r" % (kwargs,))
             fn(1, 2, red=True, blue=False)
             """)
+
+    def test_defining_functions_with_args_kwargs4(self):
         self.assert_ok("""\
             def fn(x, y, *args, **kwargs):
                 print("x is %r, y is %r" % (x, y))
@@ -79,17 +86,21 @@ class TestFunctions(vmtest.VmTestCase):
             fn('a', 'b', 1, 2, red=True, blue=False)
             """)
 
-    def test_defining_functions_with_empty_args_kwargs(self):
+    def test_defining_functions_with_empty_args_kwargs1(self):
         self.assert_ok("""\
             def fn(*args):
                 print("args is %r" % (args,))
             fn()
             """)
+
+    def test_defining_functions_with_empty_args_kwargs2(self):
         self.assert_ok("""\
             def fn(**kwargs):
                 print("kwargs is %r" % (kwargs,))
             fn()
             """)
+
+    def test_defining_functions_with_empty_args_kwargs3(self):
         self.assert_ok("""\
             def fn(*args, **kwargs):
                 print("args is %r, kwargs is %r" % (args, kwargs))
