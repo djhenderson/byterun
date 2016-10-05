@@ -4,3 +4,6 @@ htmlcov
 .tox
 MANIFEST
 *.egg-info
+*.bak
+*.pyo
+*.log
